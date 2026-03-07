@@ -1,0 +1,14 @@
+{
+    "DynamicShadows.Setting.BaseOpacity.Name": "Base Shadow Opacity",
+    "DynamicShadows.Setting.BaseOpacity.Hint": "The starting opacity (0 to 1) of the shadow when the token begins to elevate.",
+    "DynamicShadows.Setting.MaxElevation.Name": "Maximum Elevation",
+    "DynamicShadows.Setting.MaxElevation.Hint": "The elevation at which the shadow completely fades away.",
+    "DynamicShadows.Setting.Azimuth.Name": "Sun Azimuth (Direction)",
+    "DynamicShadows.Setting.Azimuth.Hint": "Compass direction of the sun (0 = North, 90 = East, 180 = South, 270 = West). Shadows cast away from the sun.",
+    "DynamicShadows.Setting.Altitude.Name": "Sun Altitude (Height)",
+    "DynamicShadows.Setting.Altitude.Hint": "Height of the sun in the sky (1 = Horizon, 89 = High Noon). Lower altitudes create longer shadows.",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Elevation Multiplier",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "How aggressively the token visually moves up the screen per unit of elevation.",
+    "DynamicShadows.Setting.AlphaThreshold.Name": "Alpha Clip Threshold",
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Opacity threshold (0 to 1) for stripping baked-in shadows. Higher values strip more pixels."
+}

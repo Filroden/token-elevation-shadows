@@ -1,0 +1,14 @@
+{
+    "DynamicShadows.Setting.BaseOpacity.Name": "Skuggans basopacitet",
+    "DynamicShadows.Setting.BaseOpacity.Hint": "Skuggans startopacitet (0 till 1) när token börjar höjas.",
+    "DynamicShadows.Setting.MaxElevation.Name": "Maximal höjd",
+    "DynamicShadows.Setting.MaxElevation.Hint": "Den höjd där skuggan försvinner helt.",
+    "DynamicShadows.Setting.Azimuth.Name": "Solens azimut (Riktning)",
+    "DynamicShadows.Setting.Azimuth.Hint": "Solens kompassriktning (0 = Norr, 90 = Öster, 180 = Söder, 270 = Väster). Skuggor kastas bort från solen.",
+    "DynamicShadows.Setting.Altitude.Name": "Solens altitud (Höjd)",
+    "DynamicShadows.Setting.Altitude.Hint": "Solens höjd på himlen (1 = Horisont, 89 = Middagstid). Lägre altituder skapar längre skuggor.",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Höjdmultiplikator",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "Hur aggressivt token visuellt flyttas uppåt på skärmen per höjdenhet.",
+    "DynamicShadows.Setting.AlphaThreshold.Name": "Alfagränsvärde för urklipp",
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Opacitetsgränsvärde (0 till 1) för att ta bort inbakade skuggor. Högre värden tar bort fler pixlar."
+}

@@ -1,23 +1,50 @@
 {
-  "id": "MODULE-FOUNDRY-ID",
-  "title": "Mona Lisa",
-  "description": "My greatest work",
-  "version": "0.0.0",
-  "compatibility": {
-    "minimum": "13",
-    "verified": "13"
-  },
-  "authors": [
-    {
-      "name": "Ken Dearman"
-    }
-  ],
-  "esmodules": [
-    "main.js"
-  ],
-  "styles": [
-  ],
-  "manifestPlusVersion": 1,
-  "manifest": "https://github.com/Filroden/fvtt/releases/download/MODULE-FOUNDRY-ID-latest/module.json",
-  "download": " https://github.com/Filroden/fvtt/releases/download/MODULE-FOUNDRY-ID-latest/MODULE-FOUNDRY-ID.zip"
+    "id": "dynamic-shadows",
+    "title": "Dynamic Shadows",
+    "description": "Adds dynamic 2.5D drop shadows and visual Y-offsets to tokens based on their elevation.",
+    "version": "0.1.0",
+    "compatibility": {
+        "minimum": "13",
+        "verified": "13.351"
+    },
+    "authors": [
+        {
+            "name": "Ken Dearman"
+        }
+    ],
+    "esmodules": ["main.js"],
+    "languages": [
+        { "lang": "en", "name": "English", "path": "languages/en.json" },
+        {
+            "lang": "en-GB",
+            "name": "English (UK)",
+            "path": "languages/en-gb.json"
+        },
+        {
+            "lang": "es",
+            "name": "Español (Spanish)",
+            "path": "languages/es.json"
+        },
+        {
+            "lang": "es-419",
+            "name": "Español (Spanish - Latin America)",
+            "path": "languages/es-419.json"
+        },
+        {
+            "lang": "fr",
+            "name": "Français (French)",
+            "path": "languages/fr.json"
+        },
+        {
+            "lang": "sv",
+            "name": "Svenska (Swedish)",
+            "path": "languages/sv.json"
+        }
+    ],
+    "url": "https://github.com/Filroden/dynamic-shadows",
+    "manifest": "https://github.com/Filroden/dynamic-shadows/releases/latest/download/module.json",
+    "download": " https://github.com/Filroden/dynamic-shadows/releases/download/v0.1.0/dynamic-shadows.zip",
+    "bugs": "https://github.com/Filroden/dynamic-shadows/issues",
+    "readme": "https://github.com/Filroden/dynamic-shadows/blob/main/README.md",
+    "license": "https://mit-license.org/"
 }

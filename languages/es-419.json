@@ -1,0 +1,14 @@
+{
+    "DynamicShadows.Setting.BaseOpacity.Name": "Opacidad base de la sombra",
+    "DynamicShadows.Setting.BaseOpacity.Hint": "La opacidad inicial (0 a 1) de la sombra cuando el token comienza a elevarse.",
+    "DynamicShadows.Setting.MaxElevation.Name": "Elevación máxima",
+    "DynamicShadows.Setting.MaxElevation.Hint": "La elevación en la que la sombra desaparece por completo.",
+    "DynamicShadows.Setting.Azimuth.Name": "Azimut del sol (Dirección)",
+    "DynamicShadows.Setting.Azimuth.Hint": "Dirección del sol en la brújula (0 = Norte, 90 = Este, 180 = Sur, 270 = Oeste). Las sombras se proyectan en dirección opuesta al sol.",
+    "DynamicShadows.Setting.Altitude.Name": "Altitud del sol (Altura)",
+    "DynamicShadows.Setting.Altitude.Hint": "Altura del sol en el cielo (1 = Horizonte, 89 = Mediodía). Altitudes más bajas crean sombras más largas.",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Multiplicador de elevación",
+    "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "Qué tan agresivamente se mueve visualmente el token hacia arriba en la pantalla por cada unidad de elevación.",
+    "DynamicShadows.Setting.AlphaThreshold.Name": "Umbral de recorte alfa",
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Umbral de opacidad (0 a 1) para eliminar las sombras integradas. Valores más altos eliminan más píxeles."
+}
