@@ -1,6 +1,6 @@
 # Dynamic Elevation Shadows
 
-![Latest Version](https://img.shields.io/badge/Version-0.1.0-blue)
+![Latest Version](https://img.shields.io/badge/Version-1.0.0-blue)
 ![Foundry Version](https://img.shields.io/badge/Foundry_VTT-v13_%7C_v13-orange)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![System Agnostic](https://img.shields.io/badge/System-Agnostic-green)
@@ -9,7 +9,7 @@
 ![Last Commit](https://img.shields.io/github/last-commit/Filroden/dynamic-shadows)
 ![Issues](https://img.shields.io/github/issues/Filroden/dynamic-shadows)
 
-Dynamic Elevation Shadows is a lightweight, system-agnostic module that automatically generates 2.5D drop shadows for tokens based on their elevation.
+Dynamic Elevation Shadows is a lightweight, system-agnostic module that automatically generates 2.5D drop shadows for tokens based on their elevation. There is an optional game setting to only apply elevation shadows if the token has a specific status/active effect, e.g. `fly` applied.
 
 It features a custom, high-performance PIXI shader that actively strips away the baked-in drop shadows often found on standard digital assets (such as the default shadows present on Forgotten Adventures tokens), ensuring a clean, dynamic silhouette at any height without requiring manual image editing.
 

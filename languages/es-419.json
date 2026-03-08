@@ -10,5 +10,9 @@
     "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Multiplicador de elevación",
     "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "Qué tan agresivamente se mueve visualmente el token hacia arriba en la pantalla por cada unidad de elevación.",
     "DynamicShadows.Setting.AlphaThreshold.Name": "Umbral de recorte alfa",
-    "DynamicShadows.Setting.AlphaThreshold.Hint": "Umbral de opacidad (0 a 1) para eliminar las sombras integradas. Valores más altos eliminan más píxeles."
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Umbral de opacidad (0 a 1) para eliminar las sombras integradas. Valores más altos eliminan más píxeles.",
+    "DynamicShadows.Setting.RequireStatus.Name": "Requerir estado aéreo",
+    "DynamicShadows.Setting.RequireStatus.Hint": "Si se habilita, los tokens solo se elevarán visualmente y proyectarán sombras dinámicas si tienen aplicado un efecto de estado aéreo. De lo contrario, permanecerán visualmente en el suelo.",
+    "DynamicShadows.Setting.StatusIds.Name": "IDs de estado aéreo",
+    "DynamicShadows.Setting.StatusIds.Hint": "Una lista separada por comas de IDs de estado específicos del sistema que activan la elevación visual (p. ej., 'fly, hover, levitate'). Por defecto es 'fly'."
 }

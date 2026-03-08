@@ -29,6 +29,8 @@ export function registerSettings(onChangeCallback) {
             value: 0.2,
             range: { min: 0, max: 1, step: 0.05 },
         },
+        requireStatus: { type: Boolean, value: false },
+        statusIds: { type: String, value: "fly" },
     };
 
     for (const [key, config] of Object.entries(defaultSettings)) {
@@ -52,6 +54,15 @@ export function registerSettings(onChangeCallback) {
  * Pulls all current settings from the database into a single object.
  */
 export function getSettingsCache() {
+    // Fetch the raw string
+    const rawStatuses = game.settings.get(MODULE_ID, "statusIds");
+
+    // Parse into a clean array: "fly, hover , levitate " -> ["fly", "hover", "levitate"]
+    const statusArray = rawStatuses
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
     return {
         baseOpacity: game.settings.get(MODULE_ID, "baseOpacity"),
         maxElevation: game.settings.get(MODULE_ID, "maxElevation"),
@@ -62,5 +73,7 @@ export function getSettingsCache() {
             "meshOffsetMultiplier",
         ),
         alphaThreshold: game.settings.get(MODULE_ID, "alphaThreshold"),
+        requireStatus: game.settings.get(MODULE_ID, "requireStatus"),
+        airborneStatuses: statusArray,
     };
 }

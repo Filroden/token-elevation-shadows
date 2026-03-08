@@ -10,5 +10,9 @@
     "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Multiplicateur d'élévation",
     "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "L'intensité avec laquelle le token se déplace visuellement vers le haut de l'écran par unité d'élévation.",
     "DynamicShadows.Setting.AlphaThreshold.Name": "Seuil d'écrêtage alpha",
-    "DynamicShadows.Setting.AlphaThreshold.Hint": "Seuil d'opacité (0 à 1) pour supprimer les ombres intégrées. Des valeurs plus élevées suppriment plus de pixels."
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Seuil d'opacité (0 à 1) pour supprimer les ombres intégrées. Des valeurs plus élevées suppriment plus de pixels.",
+    "DynamicShadows.Setting.RequireStatus.Name": "Nécessiter un statut aérien",
+    "DynamicShadows.Setting.RequireStatus.Hint": "Si activé, les tokens ne s'élèveront visuellement et ne projetteront des ombres dynamiques que s'ils ont un effet de statut aérien appliqué. Sinon, ils restent visuellement ancrés au sol.",
+    "DynamicShadows.Setting.StatusIds.Name": "ID de statut aérien",
+    "DynamicShadows.Setting.StatusIds.Hint": "Une liste séparée par des virgules d'ID de statut spécifiques au système qui déclenchent l'élévation visuelle (ex. 'fly, hover, levitate'). Par défaut 'fly'."
 }

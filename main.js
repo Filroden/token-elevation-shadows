@@ -87,6 +87,18 @@ Hooks.on("refreshToken", (token) => {
     const elevation = token.document.elevation;
     const centerY = token.y + token.h / 2;
 
+    // STATUS GATE: Check if the token has ANY of the defined airborne statuses
+    if (SHADOW_CONFIG.requireStatus) {
+        const isAirborne = SHADOW_CONFIG.airborneStatuses.some((statusId) =>
+            token.document.hasStatusEffect(statusId),
+        );
+
+        // If they are not airborne, physically ground the visual mesh
+        if (!isAirborne) {
+            elevation = 0;
+        }
+    }
+
     // 1. Negative Elevation: Remove everything and reset
     if (elevation < 0) {
         _removeShadow(token);

@@ -10,5 +10,9 @@
     "DynamicShadows.Setting.MeshOffsetMultiplier.Name": "Elevation Multiplier",
     "DynamicShadows.Setting.MeshOffsetMultiplier.Hint": "How aggressively the token visually moves up the screen per unit of elevation.",
     "DynamicShadows.Setting.AlphaThreshold.Name": "Alpha Clip Threshold",
-    "DynamicShadows.Setting.AlphaThreshold.Hint": "Opacity threshold (0 to 1) for stripping baked-in shadows. Higher values strip more pixels."
+    "DynamicShadows.Setting.AlphaThreshold.Hint": "Opacity threshold (0 to 1) for stripping baked-in shadows. Higher values strip more pixels.",
+    "DynamicShadows.Setting.RequireStatus.Name": "Require Airborne Status",
+    "DynamicShadows.Setting.RequireStatus.Hint": "If enabled, tokens will only visually elevate and cast dynamic shadows if they have an airborne status effect applied. Otherwise, they remain visually grounded.",
+    "DynamicShadows.Setting.StatusIds.Name": "Airborne Status IDs",
+    "DynamicShadows.Setting.StatusIds.Hint": "A comma-separated list of system-specific status IDs that trigger visual elevation (e.g., 'fly, hover, levitate'). Defaults to 'fly'."
 }
