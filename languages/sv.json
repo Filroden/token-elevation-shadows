@@ -1,0 +1,22 @@
+{
+    "TokenElevationShadows.Setting.BaseOpacity.Name": "Skuggans basopacitet",
+    "TokenElevationShadows.Setting.BaseOpacity.Hint": "Skuggans startopacitet (0 till 1) när token börjar höjas.",
+    "TokenElevationShadows.Setting.MaxElevation.Name": "Maximal höjd",
+    "TokenElevationShadows.Setting.MaxElevation.Hint": "Den höjd där skuggan försvinner helt.",
+    "TokenElevationShadows.Setting.Azimuth.Name": "Solens azimut (Riktning)",
+    "TokenElevationShadows.Setting.Azimuth.Hint": "Solens kompassriktning (0 = Norr, 90 = Öster, 180 = Söder, 270 = Väster). Skuggor kastas bort från solen.",
+    "TokenElevationShadows.Setting.Altitude.Name": "Solens altitud (Höjd)",
+    "TokenElevationShadows.Setting.Altitude.Hint": "Solens höjd på himlen (1 = Horisont, 89 = Middagstid). Lägre altituder skapar längre skuggor.",
+    "TokenElevationShadows.Setting.MeshOffsetMultiplier.Name": "Höjdmultiplikator",
+    "TokenElevationShadows.Setting.MeshOffsetMultiplier.Hint": "Hur aggressivt token visuellt flyttas uppåt på skärmen per höjdenhet.",
+    "TokenElevationShadows.Setting.AlphaThreshold.Name": "Alfagränsvärde för urklipp",
+    "TokenElevationShadows.Setting.AlphaThreshold.Hint": "Opacitetsgränsvärde (0 till 1) för att ta bort inbakade skuggor. Högre värden tar bort fler pixlar.",
+    "TokenElevationShadows.Setting.RequireStatus.Name": "Kräv luftburen status",
+    "TokenElevationShadows.Setting.RequireStatus.Hint": "Om aktiverat kommer tokens endast att höjas visuellt och kasta dynamiska skuggor om de har en luftburen statuseffekt tillämpad. Annars förblir de visuellt kvar på marken.",
+    "TokenElevationShadows.Setting.StatusIds.Name": "ID:n för luftburen status",
+    "TokenElevationShadows.Setting.StatusIds.Hint": "En kommaseparerad lista över systemspecifika status-ID:n som utlöser visuell höjd (t.ex. 'fly, hover, levitate'). Standard är 'fly'.",
+    "TokenElevationShadows.Setting.TimeIntegration.Name": "Tidsintegration",
+    "TokenElevationShadows.Setting.TimeIntegration.Hint": "Synkronisera skuggriktningar med moduler för tidsspårning i spelet.",
+    "TokenElevationShadows.Setting.TimeIntegration.None": "Ingen (Manuell kontroll)",
+    "TokenElevationShadows.Setting.TimeIntegration.Core": "Grundläggande världstid (SmallTime, etc.)"
+}

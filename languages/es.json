@@ -1,0 +1,22 @@
+{
+    "TokenElevationShadows.Setting.BaseOpacity.Name": "Opacidad base de la sombra",
+    "TokenElevationShadows.Setting.BaseOpacity.Hint": "La opacidad inicial (0 a 1) de la sombra cuando el token comienza a elevarse.",
+    "TokenElevationShadows.Setting.MaxElevation.Name": "Elevación máxima",
+    "TokenElevationShadows.Setting.MaxElevation.Hint": "La elevación a la que la sombra desaparece por completo.",
+    "TokenElevationShadows.Setting.Azimuth.Name": "Azimut del sol (Dirección)",
+    "TokenElevationShadows.Setting.Azimuth.Hint": "Dirección del sol en la brújula (0 = Norte, 90 = Este, 180 = Sur, 270 = Oeste). Las sombras se proyectan en dirección opuesta al sol.",
+    "TokenElevationShadows.Setting.Altitude.Name": "Altitud del sol (Altura)",
+    "TokenElevationShadows.Setting.Altitude.Hint": "Altura del sol en el cielo (1 = Horizonte, 89 = Mediodía). Altitudes más bajas crean sombras más largas.",
+    "TokenElevationShadows.Setting.MeshOffsetMultiplier.Name": "Multiplicador de elevación",
+    "TokenElevationShadows.Setting.MeshOffsetMultiplier.Hint": "La intensidad con la que el token se desplaza visualmente hacia arriba en la pantalla por unidad de elevación.",
+    "TokenElevationShadows.Setting.AlphaThreshold.Name": "Umbral de recorte alfa",
+    "TokenElevationShadows.Setting.AlphaThreshold.Hint": "Umbral de opacidad (0 a 1) para eliminar las sombras horneadas (integradas). Valores más altos eliminan más píxeles.",
+    "TokenElevationShadows.Setting.RequireStatus.Name": "Requerir estado aéreo",
+    "TokenElevationShadows.Setting.RequireStatus.Hint": "Si está activado, los tokens solo se elevarán visualmente y proyectarán sombras dinámicas si tienen aplicado un efecto de estado aéreo. De lo contrario, permanecerán visualmente en el suelo.",
+    "TokenElevationShadows.Setting.StatusIds.Name": "IDs de estado aéreo",
+    "TokenElevationShadows.Setting.StatusIds.Hint": "Una lista separada por comas de los ID de estado específicos del sistema que activan la elevación visual (ej. 'fly, hover, levitate'). Por defecto es 'fly'.",
+    "TokenElevationShadows.Setting.TimeIntegration.Name": "Integración de tiempo",
+    "TokenElevationShadows.Setting.TimeIntegration.Hint": "Sincroniza las direcciones de las sombras con los módulos de seguimiento del tiempo del juego.",
+    "TokenElevationShadows.Setting.TimeIntegration.None": "Ninguno (Control manual)",
+    "TokenElevationShadows.Setting.TimeIntegration.Core": "Tiempo del mundo principal (SmallTime, etc.)"
+}
