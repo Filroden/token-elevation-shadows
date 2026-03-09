@@ -1,15 +1,15 @@
-# Dynamic Elevation Shadows
+# Token Elevation Shadows
 
 ![Latest Version](https://img.shields.io/badge/Version-1.0.0-blue)
 ![Foundry Version](https://img.shields.io/badge/Foundry_VTT-v13_%7C_v13-orange)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![System Agnostic](https://img.shields.io/badge/System-Agnostic-green)
-![Download Count](https://img.shields.io/github/downloads/Filroden/dynamic-shadows/dynamic-shadows.zip)
-![Download Count](https://img.shields.io/github/downloads/Filroden/dynamic-shadows/latest/dynamic-shadows.zip)
-![Last Commit](https://img.shields.io/github/last-commit/Filroden/dynamic-shadows)
-![Issues](https://img.shields.io/github/issues/Filroden/dynamic-shadows)
+![Download Count](https://img.shields.io/github/downloads/Filroden/token-elevation-shadows/token-elevation-shadows.zip)
+![Download Count](https://img.shields.io/github/downloads/Filroden/token-elevation-shadows/latest/token-elevation-shadows.zip)
+![Last Commit](https://img.shields.io/github/last-commit/Filroden/token-elevation-shadows)
+![Issues](https://img.shields.io/github/issues/Filroden/token-elevation-shadows)
 
-Dynamic Elevation Shadows is a lightweight, system-agnostic module that automatically generates 2.5D drop shadows for tokens based on their elevation. There is an optional game setting to only apply elevation shadows if the token has a specific status/active effect, e.g. `fly` applied.
+**Token Elevation Shadows** is a lightweight, system-agnostic module that automatically generates 2.5D drop shadows for tokens based on their elevation. There is an optional game setting to only apply elevation shadows if the token has a specific status/active effect, e.g. `fly` applied.
 
 It features a custom, high-performance PIXI shader that actively strips away the baked-in drop shadows often found on standard digital assets (such as the default shadows present on Forgotten Adventures tokens), ensuring a clean, dynamic silhouette at any height without requiring manual image editing.
 
@@ -29,6 +29,17 @@ You can adjust the midday Altitude to reflect where your adventure takes place o
 - **Equatorial Campaigns:** The midday sun is directly overhead. Set your midday Altitude to `85-89` for tight, intense shadows.
 - **High Latitude Campaigns:** The sun never rises particularly high, even at noon. Limit your maximum midday Altitude to `40-50` to maintain longer shadows throughout the entire day cycle.
 
+## Time Integration
+
+Token Elevation Shadows features automation to synchronise your shadows with the in-game clock. When enabled, the sun will automatically sweep from East to West, stretching and shrinking shadows based on the time of day, and fading them out completely at night.
+
+Go to the module settings and change **Time Integration** to **Core World Time**. This natively supports standard Foundry time progression, as well as popular modules that manipulate the core clock, including:
+
+- **SmallTime**
+- **Simple Calendar Reborn**
+
+*(Note: For the automated day/night cycle to calculate correctly, ensure you have set a midday Altitude in your Solar Configuration settings).*
+
 ## API Reference
 
 The module exposes a public API to allow macro writers and ecosystem modules (like calendar or time-tracking modules) to dynamically rotate the shadows as in-game time passes.
@@ -36,7 +47,7 @@ The module exposes a public API to allow macro writers and ecosystem modules (li
 ### Accessing the API
 
 ```javascript
-const shadowAPI = game.modules.get("dynamic-shadows")?.api;
+const shadowAPI = game.modules.get("token-elevation-shadows")?.api;
 ```
 
 ### Methods
@@ -49,7 +60,7 @@ const shadowAPI = game.modules.get("dynamic-shadows")?.api;
 This script simulates a full day-to-night cycle over 10 seconds, sweeping the sun from East to West while adjusting the shadow length.
 
 ```javascript
-const shadowAPI = game.modules.get("dynamic-shadows")?.api;
+const shadowAPI = game.modules.get("token-elevation-shadows")?.api;
 
 if (shadowAPI) {
     const totalFrames = 300; // 10 seconds at 30fps

@@ -1,9 +1,5 @@
-export const MODULE_ID = "dynamic-shadows";
+export const MODULE_ID = "token-elevation-shadows";
 
-/**
- * Registers all module settings and attaches an onChange callback
- * to refresh the local cache and update the canvas immediately.
- */
 export function registerSettings(onChangeCallback) {
     const defaultSettings = {
         baseOpacity: {
@@ -12,7 +8,6 @@ export function registerSettings(onChangeCallback) {
             range: { min: 0.1, max: 1, step: 0.1 },
         },
         maxElevation: { type: Number, value: 100 },
-        // Replace offsets with Azimuth and Altitude
         azimuth: {
             type: Number,
             value: 180,
@@ -31,18 +26,26 @@ export function registerSettings(onChangeCallback) {
         },
         requireStatus: { type: Boolean, value: false },
         statusIds: { type: String, value: "fly" },
+        timeIntegration: {
+            type: String,
+            value: "none",
+            choices: {
+                none: "TokenElevationShadows.Setting.TimeIntegration.None",
+                core: "TokenElevationShadows.Setting.TimeIntegration.Core",
+            },
+        },
     };
 
     for (const [key, config] of Object.entries(defaultSettings)) {
-        // Capitalise the first letter for the localisation key mapping
         const locKey = key.charAt(0).toUpperCase() + key.slice(1);
 
         game.settings.register(MODULE_ID, key, {
-            name: `DynamicShadows.Setting.${locKey}.Name`,
-            hint: `DynamicShadows.Setting.${locKey}.Hint`,
+            name: `TokenElevationShadows.Setting.${locKey}.Name`,
+            hint: `TokenElevationShadows.Setting.${locKey}.Hint`,
             scope: "world",
             config: true,
             type: config.type,
+            choices: config.choices,
             range: config.range,
             default: config.value,
             onChange: () => onChangeCallback(),
@@ -50,14 +53,8 @@ export function registerSettings(onChangeCallback) {
     }
 }
 
-/**
- * Pulls all current settings from the database into a single object.
- */
 export function getSettingsCache() {
-    // Fetch the raw string
     const rawStatuses = game.settings.get(MODULE_ID, "statusIds");
-
-    // Parse into a clean array: "fly, hover , levitate " -> ["fly", "hover", "levitate"]
     const statusArray = rawStatuses
         .split(",")
         .map((s) => s.trim())
@@ -75,5 +72,6 @@ export function getSettingsCache() {
         alphaThreshold: game.settings.get(MODULE_ID, "alphaThreshold"),
         requireStatus: game.settings.get(MODULE_ID, "requireStatus"),
         airborneStatuses: statusArray,
+        timeIntegration: game.settings.get(MODULE_ID, "timeIntegration"),
     };
 }
