@@ -84,7 +84,7 @@ class AlphaThresholdFilter extends PIXI.Filter {
 Hooks.on("refreshToken", (token) => {
     if (!token.mesh || Object.keys(SHADOW_CONFIG).length === 0) return;
 
-    const elevation = token.document.elevation;
+    let elevation = token.document.elevation;
     const centerY = token.y + token.h / 2;
 
     // STATUS GATE: Check if the token has ANY of the defined airborne statuses
