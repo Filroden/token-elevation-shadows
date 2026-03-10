@@ -2,7 +2,7 @@
     "id": "token-elevation-shadows",
     "title": "Token Elevation Shadows",
     "description": "Automatically renders dynamic drop shadows beneath tokens based on their elevation, providing clear 3D spatial awareness on a 2D canvas.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "compatibility": {
         "minimum": "13",
         "verified": "13.351"
@@ -43,7 +43,7 @@
     ],
     "url": "https://github.com/Filroden/token-elevation-shadows",
     "manifest": "https://github.com/Filroden/token-elevation-shadows/releases/latest/download/module.json",
-    "download": " https://github.com/Filroden/token-elevation-shadows/releases/download/v1.0.0/token-elevation-shadows.zip",
+    "download": " https://github.com/Filroden/token-elevation-shadows/releases/download/v1.1.0/token-elevation-shadows.zip",
     "bugs": "https://github.com/Filroden/token-elevation-shadows/issues",
     "readme": "https://github.com/Filroden/token-elevation-shadows/blob/main/README.md",
     "license": "https://mit-license.org/"
