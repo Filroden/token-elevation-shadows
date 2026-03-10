@@ -1,8 +1,4 @@
-import {
-    registerSettings,
-    getSettingsCache,
-    MODULE_ID,
-} from "./src/settings.js";
+import { registerSettings, getSettingsCache, MODULE_ID } from "./src/settings.js";
 import { ShadowRenderer } from "./src/shadow.js";
 import { TimeAdapter } from "./src/time-adapter.js";
 
@@ -60,6 +56,25 @@ Hooks.once("ready", () => {
     TimeAdapter.init();
 });
 
+// Fires every time a scene is rendered, including mid-session switches
+Hooks.on("canvasReady", () => {
+    SHADOW_CONFIG = _calculateSolarOffsets(getSettingsCache());
+    for (const token of canvas.tokens.placeables) {
+        ShadowRenderer.update(token, SHADOW_CONFIG);
+    }
+});
+
+// Hook fires immediately before the current canvas is dismantled
+Hooks.on("canvasTearDown", () => {
+    // Failsafe to ensure the tokens layer is accessible
+    if (!canvas.tokens?.placeables) return;
+
+    // Iterate through all tokens and trigger the cleanup method
+    for (const token of canvas.tokens.placeables) {
+        ShadowRenderer.clear(token);
+    }
+});
+
 // --- Execution Hooks ---
 
 Hooks.on("refreshToken", (token) => {
@@ -70,11 +85,14 @@ Hooks.on("destroyToken", (token) => {
     ShadowRenderer.clear(token);
 });
 
-// Reactively fade shadows when the GM changes the scene's global darkness slider
-Hooks.on("lightingRefresh", () => {
+// Debounce groups rapid executions into a single call after the specified delay (e.g., 150ms)
+const debouncedShadowRefresh = foundry.utils.debounce(() => {
     if (canvas.ready) {
         for (const token of canvas.tokens.placeables) {
             ShadowRenderer.update(token, SHADOW_CONFIG);
         }
     }
-});
+}, 150);
+
+// Reactively fade shadows when the GM changes the scene's global darkness slider
+Hooks.on("lightingRefresh", debouncedShadowRefresh);

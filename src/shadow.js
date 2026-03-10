@@ -25,46 +25,40 @@ export class ShadowRenderer {
     static update(token, config) {
         if (!token.mesh || Object.keys(config).length === 0) return;
 
-        let elevation = token.document.elevation;
+        // Clamp elevation to ensure we do not offset underground tokens
+        let elevation = Math.max(0, token.document.elevation);
         const centerY = token.y + token.h / 2;
 
         if (config.requireStatus) {
-            const isAirborne = config.airborneStatuses.some((statusId) =>
-                token.document.hasStatusEffect(statusId),
-            );
+            const isAirborne = config.airborneStatuses.some((statusId) => token.document.hasStatusEffect(statusId));
             if (!isAirborne) elevation = 0;
         }
+
+        if (!token.mesh?.texture || token.mesh.texture === PIXI.Texture.EMPTY) return;
 
         const elevationPixels = elevation * config.meshOffsetMultiplier;
         token.mesh.position.y = centerY - elevationPixels;
 
         // --- 1. Manage the Token's Alpha Filter (Strips baked shadows) ---
-        // As long as the token is elevated, keep stripping the baked shadow, even at night
-        if (elevation > 0) {
-            if (!token._tokenAlphaFilter) {
-                token._tokenAlphaFilter = new AlphaThresholdFilter(
-                    config.alphaThreshold,
-                    1.0,
-                );
-            }
-            if (!token.mesh.filters) token.mesh.filters = [];
-            if (!token.mesh.filters.includes(token._tokenAlphaFilter)) {
-                token.mesh.filters.push(token._tokenAlphaFilter);
-            }
-            token._tokenAlphaFilter.uniforms.threshold = config.alphaThreshold;
-            token._tokenAlphaFilter.uniforms.globalOpacity = 1.0;
-        } else {
-            // If the token lands, remove the filter so natural ground shadows return
-            if (token.mesh.filters && token._tokenAlphaFilter) {
-                token.mesh.filters = token.mesh.filters.filter(
-                    (f) => f !== token._tokenAlphaFilter,
-                );
-            }
+        // Always apply the alpha filter to the token to strip baked-in shadows,
+        // ensuring consistent visual behaviour at all elevations.
+
+        if (!token._tokenAlphaFilter) {
+            token._tokenAlphaFilter = new AlphaThresholdFilter(config.alphaThreshold, 1.0);
         }
 
+        if (!token.mesh.filters) token.mesh.filters = [];
+
+        if (!token.mesh.filters.includes(token._tokenAlphaFilter)) {
+            token.mesh.filters.push(token._tokenAlphaFilter);
+        }
+
+        token._tokenAlphaFilter.uniforms.threshold = config.alphaThreshold;
+        token._tokenAlphaFilter.uniforms.globalOpacity = 1.0;
+
         // --- 2. Manage the Dynamic Shadow Sprite ---
-        // If grounded or if the sun has set, clear ONLY the shadow
-        if (elevation <= 0 || config.isNight) {
+        // Only clear the shadow if the sun has set or the token is underground
+        if (elevation < 0 || config.isNight) {
             this.clearShadow(token);
             return;
         }
@@ -74,21 +68,27 @@ export class ShadowRenderer {
         const heightRatio = Math.min(elevation / config.maxElevation, 1);
         const elevationScale = Math.max(1 - heightRatio * 0.6, 0.2);
 
-        const darknessLevel =
-            canvas.scene?.environment?.darknessLevel ??
-            canvas.scene?.darkness ??
-            0;
+        const darknessLevel = canvas.scene?.environment?.darknessLevel ?? canvas.scene?.darkness ?? 0;
         const ambientLightFactor = 1.0 - darknessLevel;
 
-        const dynamicOpacity =
-            (config.baseOpacity - heightRatio * config.baseOpacity) *
-            ambientLightFactor;
+        const dynamicOpacity = (config.baseOpacity - heightRatio * config.baseOpacity) * ambientLightFactor;
 
-        const blurAmount = 4 + heightRatio * 15;
-        const baseTokenHeight = 10;
-        const totalHeight = baseTokenHeight + elevationPixels;
+        let shadowLength;
+        let blurAmount;
 
-        const shadowLength = totalHeight / config.tanAltitude;
+        if (elevation === 0) {
+            // Provide a tight, sharp shadow for grounded tokens to mimic baked-in assets.
+            // Bounding it to 5% of the token width guarantees it cannot physically detach.
+            shadowLength = token.w * 0.05;
+            blurAmount = 2;
+        } else {
+            // Apply standard trigonometric offset and softer blur for flying tokens
+            const baseTokenHeight = 10;
+            const totalHeight = baseTokenHeight + elevationPixels;
+            shadowLength = totalHeight / config.tanAltitude;
+            blurAmount = 4 + heightRatio * 15;
+        }
+
         const currentOffsetX = -shadowLength * config.sinAzimuth;
         const currentOffsetY = shadowLength * config.cosAzimuth;
 
@@ -105,10 +105,12 @@ export class ShadowRenderer {
         token._elevationShadow.filters[1].blur = blurAmount;
 
         const centerX = token.x + token.w / 2;
-        token._elevationShadow.position.set(
-            centerX + currentOffsetX,
-            centerY + currentOffsetY,
-        );
+        token._elevationShadow.position.set(centerX + currentOffsetX, centerY + currentOffsetY);
+
+        // Synchronise the shadow's visibility with the token's hidden state.
+        if (token._elevationShadow) {
+            token._elevationShadow.visible = !token.document.hidden;
+        }
     }
 
     /**
@@ -116,6 +118,13 @@ export class ShadowRenderer {
      */
     static clearShadow(token) {
         if (token._elevationShadow) {
+            // Destroy the filters safely before destroying the sprite
+            if (token._elevationShadow.filters) {
+                for (const filter of token._elevationShadow.filters) {
+                    filter.destroy();
+                }
+            }
+
             token._elevationShadow.destroy();
             delete token._elevationShadow;
             delete token._shadowAlphaFilter;
@@ -128,9 +137,7 @@ export class ShadowRenderer {
     static clear(token) {
         this.clearShadow(token);
         if (token.mesh && token.mesh.filters && token._tokenAlphaFilter) {
-            token.mesh.filters = token.mesh.filters.filter(
-                (f) => f !== token._tokenAlphaFilter,
-            );
+            token.mesh.filters = token.mesh.filters.filter((f) => f !== token._tokenAlphaFilter);
             delete token._tokenAlphaFilter;
         }
     }
