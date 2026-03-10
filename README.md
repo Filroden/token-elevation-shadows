@@ -40,6 +40,17 @@ Go to the module settings and change **Time Integration** to **Core World Time**
 
 *(Note: For the automated day/night cycle to calculate correctly, ensure you have set a midday Altitude in your Solar Configuration settings).*
 
+## Design Philosophy: The Canvas Illusion
+
+Token Elevation Shadows is designed to create a 2.5D illusion of height without disrupting the strict 2D mechanical rules of Foundry VTT. To achieve this, the module deliberately separates the token's visual artwork from its logical footprint.
+
+When a token takes flight, you will notice the following intentional design choices:
+
+- **Tactical Clarity**: UI elements such as health bars, nameplates, status effect icons, and targeting reticles remain firmly planted on the ground. This provides a "tactical anchor," making sure players and GMs always know exactly which grid square a flying creature occupies for calculating ranges and placing area-of-effect templates.
+- **Map Interaction**: The token's clickable hitbox stays on the ground. This prevents floating artwork from accidentally obstructing your ability to select other tokens standing behind the flying creature.
+- **Vision & Lighting**: Light sources and vision cones continue to emit from the token's true footprint on the map. This guarantees that Line of Sight calculations remain mathematically accurate and fully compatible with wall and vision modules.
+- **Ecosystem Compatibility**: Because the module exclusively elevates the token's artwork (the PIXI mesh), ground-based spell effects, auras, and most Sequencer animations attached to the token's bounding box will remain on the floor where they were cast.
+
 ## API Reference
 
 The module exposes a public API to allow macro writers and ecosystem modules (like calendar or time-tracking modules) to dynamically rotate the shadows as in-game time passes.
