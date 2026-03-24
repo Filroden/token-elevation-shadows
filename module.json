@@ -2,48 +2,18 @@
     "id": "token-elevation-shadows",
     "title": "Token Elevation Shadows",
     "description": "Automatically renders dynamic drop shadows beneath tokens based on their elevation, providing clear 3D spatial awareness on a 2D canvas.",
-    "version": "1.1.0",
-    "compatibility": {
-        "minimum": "13",
-        "verified": "13.351"
-    },
-    "authors": [
-        {
-            "name": "Ken Dearman"
-        }
-    ],
+    "version": "1.1.1",
+    "compatibility": { "minimum": "13", "verified": "13.351" },
+    "authors": [{ "name": "Ken Dearman" }],
     "esmodules": ["main.js"],
     "languages": [
         { "lang": "en", "name": "English", "path": "languages/en.json" },
-        {
-            "lang": "en-GB",
-            "name": "English (UK)",
-            "path": "languages/en-gb.json"
-        },
-        {
-            "lang": "es",
-            "name": "Español (Spanish)",
-            "path": "languages/es.json"
-        },
-        {
-            "lang": "es-419",
-            "name": "Español (Spanish - Latin America)",
-            "path": "languages/es-419.json"
-        },
-        {
-            "lang": "fr",
-            "name": "Français (French)",
-            "path": "languages/fr.json"
-        },
-        {
-            "lang": "sv",
-            "name": "Svenska (Swedish)",
-            "path": "languages/sv.json"
-        }
+        { "lang": "en-GB", "name": "English (UK)", "path": "languages/en-gb.json" },
+        { "lang": "fr", "name": "Français", "path": "languages/fr.json" }
     ],
     "url": "https://github.com/Filroden/token-elevation-shadows",
     "manifest": "https://github.com/Filroden/token-elevation-shadows/releases/latest/download/module.json",
-    "download": " https://github.com/Filroden/token-elevation-shadows/releases/download/v1.1.0/token-elevation-shadows.zip",
+    "download": " https://github.com/Filroden/token-elevation-shadows/releases/download/v1.1.1/token-elevation-shadows.zip",
     "bugs": "https://github.com/Filroden/token-elevation-shadows/issues",
     "readme": "https://github.com/Filroden/token-elevation-shadows/blob/main/README.md",
     "license": "https://mit-license.org/"
