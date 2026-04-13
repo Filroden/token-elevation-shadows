@@ -1,7 +1,7 @@
 # Token Elevation Shadows
 
-![Latest Version](https://img.shields.io/badge/Version-1.1.1-blue)
-![Foundry Version](https://img.shields.io/badge/Foundry_VTT-v13_%7C_v13-orange)
+![Latest Version](https://img.shields.io/badge/Version-2.0.0-blue)
+![Foundry Version](https://img.shields.io/badge/Foundry_VTT-v13_%7C_v14-orange)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![System Agnostic](https://img.shields.io/badge/System-Agnostic-green)
 ![Download Count](https://img.shields.io/github/downloads/Filroden/token-elevation-shadows/token-elevation-shadows.zip)

@@ -1,8 +1,22 @@
+// File: src/shadow.js
+
+const SHADOW_CONSTANTS = {
+    BASE_TOKEN_HEIGHT: 10,
+    GROUNDED_SHADOW_RATIO: 0.05,
+    GROUNDED_BLUR: 2,
+    ELEVATION_BLUR_BASE: 4,
+    ELEVATION_BLUR_MULTIPLIER: 15,
+    MIN_ELEVATION_SCALE: 0.2,
+    SCALE_REDUCTION_FACTOR: 0.6,
+    Z_INDEX: -1,
+    BASE_ELEVATION: 0,
+};
+
 /**
  * Custom PIXI Filter to strip out semi-transparent pixels and apply dynamic opacity.
  */
 class AlphaThresholdFilter extends PIXI.Filter {
-    constructor(threshold = 0.2, globalOpacity = 1.0) {
+    constructor(threshold = 0.2, globalOpacity = 1) {
         const fragmentShader = `
             varying vec2 vTextureCoord;
             uniform sampler2D uSampler;
@@ -22,29 +36,59 @@ class AlphaThresholdFilter extends PIXI.Filter {
 }
 
 export class ShadowRenderer {
+    /**
+     * Core update loop for managing token shadows.
+     */
     static update(token, config) {
-        if (!token.mesh || Object.keys(config).length === 0) return;
+        if (!this._isValidForShadows(token, config)) return;
 
-        // Clamp elevation to ensure we do not offset underground tokens
-        let elevation = Math.max(0, token.document.elevation);
+        const elevation = this._calculateEffectiveElevation(token, config);
         const centerY = token.y + token.h / 2;
+        const centerX = token.x + token.w / 2;
+
+        this._applyAlphaThresholdFilter(token, config);
+
+        if (elevation < 0 || config.isNight) {
+            this.clearShadow(token);
+            return;
+        }
+
+        if (!token._elevationShadow) {
+            this._createShadow(token, config);
+        }
+
+        this._mutateShadowState(token, config, elevation, centerX, centerY);
+    }
+
+    /**
+     * Validates if the token should be processed for shadow rendering.
+     */
+    static _isValidForShadows(token, config) {
+        if (!token.mesh || Object.keys(config).length === 0) return false;
+        if (!token.mesh.texture || token.mesh.texture === PIXI.Texture.EMPTY) return false;
+        return true;
+    }
+
+    /**
+     * Determines the mathematical elevation, accounting for status requirements.
+     */
+    static _calculateEffectiveElevation(token, config) {
+        let elevation = Math.max(0, token.document.elevation);
 
         if (config.requireStatus) {
             const isAirborne = config.airborneStatuses.some((statusId) => token.document.hasStatusEffect(statusId));
             if (!isAirborne) elevation = 0;
         }
 
-        if (!token.mesh?.texture || token.mesh.texture === PIXI.Texture.EMPTY) return;
+        return elevation;
+    }
 
-        const elevationPixels = elevation * config.meshOffsetMultiplier;
-        token.mesh.position.y = centerY - elevationPixels;
-
-        // --- 1. Manage the Token's Alpha Filter (Strips baked shadows) ---
-        // Always apply the alpha filter to the token to strip baked-in shadows,
-        // ensuring consistent visual behaviour at all elevations.
-
+    /**
+     * Ensures the token's baked-in shadow is consistently stripped.
+     */
+    static _applyAlphaThresholdFilter(token, config) {
         if (!token._tokenAlphaFilter) {
-            token._tokenAlphaFilter = new AlphaThresholdFilter(config.alphaThreshold, 1.0);
+            token._tokenAlphaFilter = new AlphaThresholdFilter(config.alphaThreshold, 1);
         }
 
         if (!token.mesh.filters) token.mesh.filters = [];
@@ -54,40 +98,34 @@ export class ShadowRenderer {
         }
 
         token._tokenAlphaFilter.uniforms.threshold = config.alphaThreshold;
-        token._tokenAlphaFilter.uniforms.globalOpacity = 1.0;
+        token._tokenAlphaFilter.uniforms.globalOpacity = 1;
+    }
 
-        // --- 2. Manage the Dynamic Shadow Sprite ---
-        // Only clear the shadow if the sun has set or the token is underground
-        if (elevation < 0 || config.isNight) {
-            this.clearShadow(token);
-            return;
-        }
+    /**
+     * Mutates the spatial and visual state of the dynamic shadow.
+     */
+    static _mutateShadowState(token, config, elevation, centerX, centerY) {
+        // 1. Calculate the physical pixel offset
+        const elevationPixels = elevation * config.meshOffsetMultiplier;
 
-        if (!token._elevationShadow) this._createShadow(token, config);
+        // Visually move the token art up the screen to restore the illusion of flight
+        token.mesh.position.y = centerY - elevationPixels;
+
+        const shadowSprite = token._elevationShadow;
+
+        // Bind the shadow to the token's native elevation layer
+        shadowSprite.elevation = token.document.elevation;
+        shadowSprite.sortLayer = token.mesh.sortLayer;
+        shadowSprite.zIndex = token.mesh.zIndex - 1;
 
         const heightRatio = Math.min(elevation / config.maxElevation, 1);
-        const elevationScale = Math.max(1 - heightRatio * 0.6, 0.2);
+        const elevationScale = Math.max(1 - heightRatio * SHADOW_CONSTANTS.SCALE_REDUCTION_FACTOR, SHADOW_CONSTANTS.MIN_ELEVATION_SCALE);
 
         const darknessLevel = canvas.scene?.environment?.darknessLevel ?? canvas.scene?.darkness ?? 0;
-        const ambientLightFactor = 1.0 - darknessLevel;
-
+        const ambientLightFactor = 1 - darknessLevel;
         const dynamicOpacity = (config.baseOpacity - heightRatio * config.baseOpacity) * ambientLightFactor;
 
-        let shadowLength;
-        let blurAmount;
-
-        if (elevation === 0) {
-            // Provide a tight, sharp shadow for grounded tokens to mimic baked-in assets.
-            // Bounding it to 5% of the token width guarantees it cannot physically detach.
-            shadowLength = token.w * 0.05;
-            blurAmount = 2;
-        } else {
-            // Apply standard trigonometric offset and softer blur for flying tokens
-            const baseTokenHeight = 10;
-            const totalHeight = baseTokenHeight + elevationPixels;
-            shadowLength = totalHeight / config.tanAltitude;
-            blurAmount = 4 + heightRatio * 15;
-        }
+        const { shadowLength, blurAmount } = this._calculateShadowGeometry(token, elevation, elevationPixels, heightRatio, config);
 
         const currentOffsetX = -shadowLength * config.sinAzimuth;
         const currentOffsetY = shadowLength * config.cosAzimuth;
@@ -95,30 +133,42 @@ export class ShadowRenderer {
         token._shadowAlphaFilter.uniforms.threshold = config.alphaThreshold;
         token._shadowAlphaFilter.uniforms.globalOpacity = dynamicOpacity;
 
-        token._elevationShadow.texture = token.mesh.texture;
-        token._elevationShadow.rotation = token.mesh.rotation;
-        token._elevationShadow.anchor.copyFrom(token.mesh.anchor);
+        shadowSprite.texture = token.mesh.texture;
+        shadowSprite.rotation = token.mesh.rotation;
+        shadowSprite.anchor.copyFrom(token.mesh.anchor);
 
-        token._elevationShadow.scale.copyFrom(token.mesh.scale);
-        token._elevationShadow.scale.x *= elevationScale;
-        token._elevationShadow.scale.y *= elevationScale;
-        token._elevationShadow.filters[1].blur = blurAmount;
+        shadowSprite.scale.copyFrom(token.mesh.scale);
+        shadowSprite.scale.x *= elevationScale;
+        shadowSprite.scale.y *= elevationScale;
 
-        const centerX = token.x + token.w / 2;
-        token._elevationShadow.position.set(centerX + currentOffsetX, centerY + currentOffsetY);
+        const blurFilter = shadowSprite.filters.find((f) => f instanceof PIXI.BlurFilter);
+        if (blurFilter) blurFilter.blur = blurAmount;
 
-        // Synchronise the shadow's visibility with the token's hidden state.
-        if (token._elevationShadow) {
-            token._elevationShadow.visible = !token.document.hidden;
-        }
+        shadowSprite.position.set(centerX + currentOffsetX, centerY + currentOffsetY);
+        shadowSprite.visible = !token.document.hidden;
     }
 
     /**
-     * Destroys the shadow sprite but leaves the token's alpha filter intact
+     * Isolates the mathematical calculations for shadow length and blur.
      */
+    static _calculateShadowGeometry(token, elevation, elevationPixels, heightRatio, config) {
+        if (elevation === 0) {
+            return {
+                shadowLength: token.w * SHADOW_CONSTANTS.GROUNDED_SHADOW_RATIO,
+                blurAmount: SHADOW_CONSTANTS.GROUNDED_BLUR,
+            };
+        }
+
+        const totalHeight = SHADOW_CONSTANTS.BASE_TOKEN_HEIGHT + elevationPixels;
+
+        return {
+            shadowLength: totalHeight / config.tanAltitude,
+            blurAmount: SHADOW_CONSTANTS.ELEVATION_BLUR_BASE + heightRatio * SHADOW_CONSTANTS.ELEVATION_BLUR_MULTIPLIER,
+        };
+    }
+
     static clearShadow(token) {
         if (token._elevationShadow) {
-            // Destroy the filters safely before destroying the sprite
             if (token._elevationShadow.filters) {
                 for (const filter of token._elevationShadow.filters) {
                     filter.destroy();
@@ -131,12 +181,9 @@ export class ShadowRenderer {
         }
     }
 
-    /**
-     * Fully cleans up everything (used when a token is deleted from the canvas)
-     */
     static clear(token) {
         this.clearShadow(token);
-        if (token.mesh && token.mesh.filters && token._tokenAlphaFilter) {
+        if (token.mesh?.filters && token._tokenAlphaFilter) {
             token.mesh.filters = token.mesh.filters.filter((f) => f !== token._tokenAlphaFilter);
             delete token._tokenAlphaFilter;
         }
@@ -145,12 +192,13 @@ export class ShadowRenderer {
     static _createShadow(token, config) {
         const shadow = new PIXI.Sprite(token.mesh.texture);
         shadow.tint = 0x000000;
+
         const alphaFilter = new AlphaThresholdFilter(config.alphaThreshold);
         const blurFilter = new PIXI.BlurFilter();
         shadow.filters = [alphaFilter, blurFilter];
-        shadow.zIndex = -1;
 
         canvas.primary.addChild(shadow);
+
         token._elevationShadow = shadow;
         token._shadowAlphaFilter = alphaFilter;
     }
