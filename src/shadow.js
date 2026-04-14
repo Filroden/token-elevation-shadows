@@ -34,7 +34,10 @@ export class ShadowRenderer {
             if (!isAirborne) elevation = 0;
         }
 
-        if (!token.mesh?.texture || token.mesh.texture === PIXI.Texture.EMPTY) return;
+        if (!token.mesh?.texture || token.mesh.texture === PIXI.Texture.EMPTY) {
+            this._awaitAsyncTexture(token, config);
+            return;
+        }
 
         const elevationPixels = elevation * config.meshOffsetMultiplier;
         token.mesh.position.y = centerY - elevationPixels;
@@ -111,6 +114,33 @@ export class ShadowRenderer {
         if (token._elevationShadow) {
             token._elevationShadow.visible = !token.document.hidden;
         }
+    }
+
+    /**
+     * Dedicated helper to handle V13 asynchronous texture loading on initial world load.
+     */
+    static _awaitAsyncTexture(token, config) {
+        const src = token.document.texture?.src;
+
+        // If there is no image source, or we are already waiting for it, do nothing.
+        if (!src || token._waitingForShadowTexture) return;
+
+        token._waitingForShadowTexture = true;
+
+        // Tap into Foundry's core loader to await the specific asset
+        loadTexture(src)
+            .then(() => {
+                token._waitingForShadowTexture = false;
+
+                // Once the image arrives, verify the token hasn't been deleted,
+                // then manually re-trigger the mathematical loop.
+                if (!token._destroyed && token.mesh) {
+                    this.update(token, config);
+                }
+            })
+            .catch(() => {
+                token._waitingForShadowTexture = false;
+            });
     }
 
     /**
