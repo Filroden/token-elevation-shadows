@@ -1,5 +1,3 @@
-// File: src/shadow.js
-
 const SHADOW_CONSTANTS = {
     BASE_TOKEN_HEIGHT: 10,
     GROUNDED_SHADOW_RATIO: 0.05,
@@ -10,10 +8,12 @@ const SHADOW_CONSTANTS = {
     SCALE_REDUCTION_FACTOR: 0.6,
     Z_INDEX: -1,
     BASE_ELEVATION: 0,
+    NATIVE_TOKEN_LAYER: 700,
 };
 
 /**
  * Custom PIXI Filter to strip out semi-transparent pixels and apply dynamic opacity.
+ * Used to create clean shadow silhouettes by removing semi-transparent areas.
  */
 class AlphaThresholdFilter extends PIXI.Filter {
     constructor(threshold = 0.2, globalOpacity = 1) {
@@ -38,9 +38,15 @@ class AlphaThresholdFilter extends PIXI.Filter {
 export class ShadowRenderer {
     /**
      * Core update loop for managing token shadows.
+     * Validates token, calculates elevation, and creates/updates shadow sprite.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {Object} config - Shadow configuration with solar positioning
      */
     static update(token, config) {
-        if (!this._isValidForShadows(token, config)) return;
+        if (!this._isValidForShadows(token, config)) {
+            return;
+        }
 
         const elevation = this._calculateEffectiveElevation(token, config);
         const centerY = token.y + token.h / 2;
@@ -62,27 +68,21 @@ export class ShadowRenderer {
 
     /**
      * Validates if the token should be processed for shadow rendering.
+     * Checks for mesh existence, texture loading, and configuration validity.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {Object} config - Shadow configuration object
+     * @returns {boolean} True if token is valid for shadow rendering
      */
     static _isValidForShadows(token, config) {
-        if (!token.mesh || Object.keys(config).length === 0) return false;
+        if (!token.mesh || Object.keys(config).length === 0) {
+            return false;
+        }
 
-        // If the texture is currently empty (still downloading), wait for it.
-        if (!token.mesh.texture || token.mesh.texture === PIXI.Texture.EMPTY) {
-            const src = token.document.texture?.src;
-            if (src && !token._waitingForShadowTexture) {
-                token._waitingForShadowTexture = true;
-
-                // Tap into Foundry's core loader to await the specific asset
-                loadTexture(src)
-                    .then(() => {
-                        token._waitingForShadowTexture = false;
-                        // Re-trigger the mathematical loop exactly once the image is ready!
-                        if (token.mesh) this.update(token, config);
-                    })
-                    .catch(() => {
-                        token._waitingForShadowTexture = false;
-                    });
-            }
+        // Ensure the texture is not empty and has resolved physical dimensions
+        const tex = token.mesh.texture;
+        if (!tex || tex === PIXI.Texture.EMPTY || tex.width === 0) {
+            this._awaitAsyncTexture(token);
             return false;
         }
 
@@ -90,7 +90,41 @@ export class ShadowRenderer {
     }
 
     /**
+     * Dedicated helper to handle V14 asynchronous texture loading.
+     */
+    static _awaitAsyncTexture(token) {
+        const src = token.document.texture?.src;
+        if (!src || token._waitingForShadowTexture) return;
+
+        token._waitingForShadowTexture = true;
+
+        // Tap into Foundry's core loader to await the specific asset
+        loadTexture(src)
+            .then(() => {
+                token._waitingForShadowTexture = false;
+
+                // Do not manually execute the update outside the render loop.
+                // Force Foundry to natively map the texture, which will safely trigger
+                // the refreshToken hook during the next valid frame cycle.
+                if (!token.destroyed) {
+                    token.renderFlags.set({
+                        refreshMesh: true,
+                        refreshPosition: true,
+                        refreshElevation: true,
+                    });
+                }
+            })
+            .catch(() => {
+                token._waitingForShadowTexture = false;
+            });
+    }
+
+    /**
      * Determines if the token is currently inside a bounded V14 Scene Region (an interior).
+     * Used to calculate indoor vs outdoor shadow characteristics.
+     *
+     * @param {Token} token - The Foundry token object
+     * @returns {boolean} True if token is inside an interior region
      */
     static _isIndoor(token) {
         if (!canvas.regions?.placeables) return false;
@@ -125,6 +159,11 @@ export class ShadowRenderer {
 
     /**
      * Determines the mathematical elevation, accounting for status requirements.
+     * Ground-level tokens (elevation 0) don't cast shadows unless they have required airborne status.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {Object} config - Shadow configuration object
+     * @returns {number} Effective elevation value for shadow calculations
      */
     static _calculateEffectiveElevation(token, config) {
         let elevation = Math.max(0, token.document.elevation);
@@ -139,6 +178,10 @@ export class ShadowRenderer {
 
     /**
      * Ensures the token's baked-in shadow is consistently stripped.
+     * Applies alpha threshold filter to remove semi-transparent pixels from token texture.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {Object} config - Shadow configuration object
      */
     static _applyAlphaThresholdFilter(token, config) {
         if (!token._tokenAlphaFilter) {
@@ -157,28 +200,34 @@ export class ShadowRenderer {
 
     /**
      * Mutates the spatial and visual state of the dynamic shadow.
+     * Positions shadow sprite, applies scaling/blur effects, and handles elevation layering.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {Object} config - Shadow configuration object
+     * @param {number} elevation - Token's effective elevation
+     * @param {number} centerX - Token center X coordinate
+     * @param {number} centerY - Token center Y coordinate
      */
     static _mutateShadowState(token, config, elevation, centerX, centerY) {
-        // 1. Calculate the physical pixel offset
+        // Calculate the physical pixel offset based on elevation
         const elevationPixels = elevation * config.meshOffsetMultiplier;
 
         // Visually move the token art up the screen to restore the illusion of flight
-        token.mesh.position.y = centerY - elevationPixels;
+        this._applyTokenVisualOffset(token, centerY, elevationPixels);
 
         const shadowSprite = token._elevationShadow;
 
-        // NATIVE FIRST: Track the previous sorting pillars to detect traversal
+        // Track previous sorting parameters to detect layer changes
         const prevElevation = shadowSprite.elevation;
         const prevSortLayer = shadowSprite.sortLayer;
         const prevZIndex = shadowSprite.zIndex;
 
-        // Bind the shadow to the token's native elevation layer
+        // Bind the shadow to the token's native elevation layer for proper sorting
         shadowSprite.elevation = token.document.elevation;
-        shadowSprite.sortLayer = token.mesh.sortLayer ?? 700;
+        shadowSprite.sortLayer = token.mesh.sortLayer ?? SHADOW_CONSTANTS.NATIVE_TOKEN_LAYER;
         shadowSprite.zIndex = (token.mesh.zIndex ?? 0) - 1;
 
-        // V14 OPTIMISATION FIX: Force the primary group to recalculate its buckets
-        // if the shadow physically moves between region levels or z-indexes.
+        // Force the primary group to recalculate its buckets if shadow moved between elevation layers
         if (prevElevation !== shadowSprite.elevation || prevSortLayer !== shadowSprite.sortLayer || prevZIndex !== shadowSprite.zIndex) {
             canvas.primary.sortDirty = true;
         }
@@ -214,10 +263,22 @@ export class ShadowRenderer {
     }
 
     /**
-     * Isolates the mathematical calculations for shadow length and blur.
+     * Isolates token visual positional mutation.
      */
+    static _applyTokenVisualOffset(token, centerY, elevationPixels) {
+        token.mesh.position.y = centerY - elevationPixels;
+    }
+
     /**
-     * Isolates the mathematical calculations for shadow length and blur.
+     * Calculates shadow geometry parameters based on token elevation and environment.
+     * Determines shadow length and blur amount for realistic shadow rendering.
+     *
+     * @param {Token} token - The Foundry token object
+     * @param {number} elevation - Token's effective elevation
+     * @param {number} elevationPixels - Elevation converted to pixel units
+     * @param {number} heightRatio - Normalized elevation ratio (0-1)
+     * @param {Object} config - Shadow configuration object
+     * @returns {Object} Object containing shadowLength and blurAmount properties
      */
     static _calculateShadowGeometry(token, elevation, elevationPixels, heightRatio, config) {
         const isIndoor = this._isIndoor(token);
@@ -240,6 +301,12 @@ export class ShadowRenderer {
         };
     }
 
+    /**
+     * Removes the elevation shadow from a token and cleans up associated resources.
+     * Destroys filters and sprite, then removes references from token.
+     *
+     * @param {Token} token - The Foundry token object to clear shadow from
+     */
     static clearShadow(token) {
         if (token._elevationShadow) {
             if (token._elevationShadow.filters) {
@@ -254,6 +321,12 @@ export class ShadowRenderer {
         }
     }
 
+    /**
+     * Completely clears all shadow-related modifications from a token.
+     * Removes both the elevation shadow and any alpha threshold filters applied to the token mesh.
+     *
+     * @param {Token} token - The Foundry token object to clear completely
+     */
     static clear(token) {
         this.clearShadow(token);
         if (token.mesh?.filters && token._tokenAlphaFilter) {
@@ -262,6 +335,13 @@ export class ShadowRenderer {
         }
     }
 
+    /**
+     * Creates a new elevation shadow sprite for a token.
+     * Sets up the shadow with proper tinting, filters, and canvas integration.
+     *
+     * @param {Token} token - The Foundry token object to create shadow for
+     * @param {Object} config - Shadow configuration object
+     */
     static _createShadow(token, config) {
         const shadow = new PIXI.Sprite(token.mesh.texture);
         shadow.tint = 0x000000;
@@ -277,6 +357,9 @@ export class ShadowRenderer {
         shadow.zIndex = (token.mesh.zIndex ?? 0) - 1;
 
         canvas.primary.addChild(shadow);
+
+        // Explicitly flag the primary group to re-sort its elevation buckets.
+        canvas.primary.sortDirty = true;
 
         token._elevationShadow = shadow;
         token._shadowAlphaFilter = alphaFilter;
