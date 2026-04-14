@@ -13,6 +13,11 @@
 
 It features a custom, high-performance PIXI shader that can strip away the baked-in drop shadows often found on standard digital assets. This ensures a clean, consistent silhouette whether a creature is walking on the ground or flying high above it, without requiring manual image editing.
 
+Please install the correct version of the module:
+
+v1.x is compatible with v13 of FoundryVTT.
+v2.x is compatible with v14 of FoundryVTT.
+
 ## Solar Configuration
 
 The module uses a trigonometric Altitude and Azimuth model to determine the length and direction of shadows. You can configure the global sun position in the module settings.

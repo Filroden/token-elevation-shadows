@@ -3,7 +3,7 @@
     "title": "Token Elevation Shadows",
     "description": "Automatically renders dynamic drop shadows beneath tokens based on their elevation, providing clear 3D spatial awareness on a 2D canvas.",
     "version": "2.0.0",
-    "compatibility": { "minimum": "14", "verified": "14.630", "maximum": "14" },
+    "compatibility": { "minimum": "14", "verified": "14.360", "maximum": "14" },
     "authors": [{ "name": "Ken Dearman" }],
     "esmodules": ["main.js"],
     "languages": [

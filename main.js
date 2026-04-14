@@ -77,6 +77,10 @@ Hooks.on("canvasTearDown", () => {
 
 // --- Execution Hooks ---
 
+Hooks.on("drawToken", (token) => {
+    ShadowRenderer.update(token, SHADOW_CONFIG);
+});
+
 Hooks.on("refreshToken", (token) => {
     ShadowRenderer.update(token, SHADOW_CONFIG);
 });

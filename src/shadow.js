@@ -65,8 +65,62 @@ export class ShadowRenderer {
      */
     static _isValidForShadows(token, config) {
         if (!token.mesh || Object.keys(config).length === 0) return false;
-        if (!token.mesh.texture || token.mesh.texture === PIXI.Texture.EMPTY) return false;
+
+        // If the texture is currently empty (still downloading), wait for it.
+        if (!token.mesh.texture || token.mesh.texture === PIXI.Texture.EMPTY) {
+            const src = token.document.texture?.src;
+            if (src && !token._waitingForShadowTexture) {
+                token._waitingForShadowTexture = true;
+
+                // Tap into Foundry's core loader to await the specific asset
+                loadTexture(src)
+                    .then(() => {
+                        token._waitingForShadowTexture = false;
+                        // Re-trigger the mathematical loop exactly once the image is ready!
+                        if (token.mesh) this.update(token, config);
+                    })
+                    .catch(() => {
+                        token._waitingForShadowTexture = false;
+                    });
+            }
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * Determines if the token is currently inside a bounded V14 Scene Region (an interior).
+     */
+    static _isIndoor(token) {
+        if (!canvas.regions?.placeables) return false;
+
+        const tokenCenter = token.center;
+        const tokenElevation = token.document.elevation;
+
+        for (const region of canvas.regions.placeables) {
+            const bottomElevation = region.document.elevation.bottom ?? -Infinity;
+            const topElevation = region.document.elevation.top ?? Infinity;
+
+            // Scenario A: Underneath an overhead roof
+            // If the region rests above the token, we test the token's 2D coordinates
+            // against the region's lowest physical floor.
+            if (bottomElevation > tokenElevation) {
+                if (region.document.testPoint({ x: tokenCenter.x, y: tokenCenter.y, elevation: bottomElevation })) {
+                    return true;
+                }
+            }
+
+            // Scenario B: Inside a bounded interior
+            // If the region physically encloses the token AND has a definitive ceiling.
+            if (topElevation < Infinity && tokenElevation >= bottomElevation && tokenElevation <= topElevation) {
+                if (region.document.testPoint({ x: tokenCenter.x, y: tokenCenter.y, elevation: tokenElevation })) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -113,10 +167,21 @@ export class ShadowRenderer {
 
         const shadowSprite = token._elevationShadow;
 
+        // NATIVE FIRST: Track the previous sorting pillars to detect traversal
+        const prevElevation = shadowSprite.elevation;
+        const prevSortLayer = shadowSprite.sortLayer;
+        const prevZIndex = shadowSprite.zIndex;
+
         // Bind the shadow to the token's native elevation layer
         shadowSprite.elevation = token.document.elevation;
-        shadowSprite.sortLayer = token.mesh.sortLayer;
-        shadowSprite.zIndex = token.mesh.zIndex - 1;
+        shadowSprite.sortLayer = token.mesh.sortLayer ?? 700;
+        shadowSprite.zIndex = (token.mesh.zIndex ?? 0) - 1;
+
+        // V14 OPTIMISATION FIX: Force the primary group to recalculate its buckets
+        // if the shadow physically moves between region levels or z-indexes.
+        if (prevElevation !== shadowSprite.elevation || prevSortLayer !== shadowSprite.sortLayer || prevZIndex !== shadowSprite.zIndex) {
+            canvas.primary.sortDirty = true;
+        }
 
         const heightRatio = Math.min(elevation / config.maxElevation, 1);
         const elevationScale = Math.max(1 - heightRatio * SHADOW_CONSTANTS.SCALE_REDUCTION_FACTOR, SHADOW_CONSTANTS.MIN_ELEVATION_SCALE);
@@ -151,7 +216,15 @@ export class ShadowRenderer {
     /**
      * Isolates the mathematical calculations for shadow length and blur.
      */
+    /**
+     * Isolates the mathematical calculations for shadow length and blur.
+     */
     static _calculateShadowGeometry(token, elevation, elevationPixels, heightRatio, config) {
+        const isIndoor = this._isIndoor(token);
+
+        // Indoor shadows are tighter and less affected by solar azimuth
+        const shadowDampener = isIndoor ? 0.25 : 1;
+
         if (elevation === 0) {
             return {
                 shadowLength: token.w * SHADOW_CONSTANTS.GROUNDED_SHADOW_RATIO,
@@ -162,7 +235,7 @@ export class ShadowRenderer {
         const totalHeight = SHADOW_CONSTANTS.BASE_TOKEN_HEIGHT + elevationPixels;
 
         return {
-            shadowLength: totalHeight / config.tanAltitude,
+            shadowLength: (totalHeight / config.tanAltitude) * shadowDampener,
             blurAmount: SHADOW_CONSTANTS.ELEVATION_BLUR_BASE + heightRatio * SHADOW_CONSTANTS.ELEVATION_BLUR_MULTIPLIER,
         };
     }
@@ -196,6 +269,12 @@ export class ShadowRenderer {
         const alphaFilter = new AlphaThresholdFilter(config.alphaThreshold);
         const blurFilter = new PIXI.BlurFilter();
         shadow.filters = [alphaFilter, blurFilter];
+
+        // Pre-assign the sorting pillars before adding to the group.
+        // This prevents the sprite from being permanently batched into the Background layer.
+        shadow.elevation = token.document.elevation;
+        shadow.sortLayer = token.mesh.sortLayer ?? 700; // 700 is the native Tokens layer
+        shadow.zIndex = (token.mesh.zIndex ?? 0) - 1;
 
         canvas.primary.addChild(shadow);
 
