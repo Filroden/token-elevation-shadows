@@ -17,8 +17,8 @@ It is computationally too difficult to cast real shadows from lights, so the mod
 
 Please install the correct version of the module:
 
-v1.x is compatible with v13 of FoundryVTT.
-v2.x is compatible with v14 of FoundryVTT.
+- v1.x is compatible with v13 of FoundryVTT.
+- v2.x is compatible with v14 of FoundryVTT.
 
 ## Solar Configuration
 
