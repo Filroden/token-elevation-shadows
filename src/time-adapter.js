@@ -12,8 +12,8 @@ export class TimeAdapter {
     }
 
     static init() {
-        // Force an initial synchronisation check when the module loads
-        this._syncTime();
+        // Don't force an initial synchronisation - let it happen naturally via updateWorldTime
+        // this._syncTime();
 
         // Universal Core Hook (Covers SmallTime, Simple Calendar Reborn, and core Foundry time)
         Hooks.on("updateWorldTime", () => {
