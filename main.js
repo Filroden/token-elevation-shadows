@@ -3,6 +3,7 @@ import { ShadowRenderer } from "./src/shadow.js";
 import { TimeAdapter } from "./src/time-adapter.js";
 
 let SHADOW_CONFIG = {};
+let timeAdapterInitialized = false;
 
 function _calculateSolarOffsets(config) {
     // --- Flag if the sun has set ---
@@ -51,9 +52,6 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
     SHADOW_CONFIG = _calculateSolarOffsets(getSettingsCache());
-
-    // Initialize the Time Adapter permanently
-    TimeAdapter.init();
 });
 
 // Fires every time a scene is rendered, including mid-session switches
@@ -61,6 +59,11 @@ Hooks.on("canvasReady", () => {
     SHADOW_CONFIG = _calculateSolarOffsets(getSettingsCache());
     for (const token of canvas.tokens.placeables) {
         ShadowRenderer.update(token, SHADOW_CONFIG);
+    }
+
+    if (!timeAdapterInitialized) {
+        TimeAdapter.init();
+        timeAdapterInitialized = true;
     }
 });
 

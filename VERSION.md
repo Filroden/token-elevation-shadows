@@ -2,6 +2,7 @@
 
 | Version | Changes |
 | :--- | :--- |
+| **Version 1.1.3** | **BUG FIXES**<br> -Resolved an issue where shadows failed to render on initial world load by allowing the native system to handle asynchronous texture resolutions.|
 | **Version 1.1.2** | **UNDER THE HOOD**<br> - Version bump to set module's maximum version to v13. Version 1 will remain available for FoundryVTT v13 but will only receive bug fixes.|
 | **Version 1.1.1** | **REMOVED**<br>- Removed Spanish (`es` and `es-419`) and Swedish (`sv`) language support to comply with Foundry's AI Content Policy. If native speakers can confirm the quality of the translations, they can be quickly restored.|
 | **Version 1.1.0** | **NEW FEATURES**<br>- Grounded tokens (0 elevation) now cast a tight, crisp directional shadow. This makes sure there is a seamless visual transition when tokens take flight and maintains consistent token aesthetics by permanently stripping baked-in asset shadows.<br><br>**BUG FIXES**<br>- Shadows now reliably appear when activating or switching to a new scene mid-session.<br>- Resolved a rendering error that occasionally prevented shadows from appearing when new tokens were first dropped onto the canvas.<br>- Fixed an issue where shadows cast by GM-hidden tokens could still be seen by players.|

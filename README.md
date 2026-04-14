@@ -1,6 +1,6 @@
 # Token Elevation Shadows
 
-![Latest Version](https://img.shields.io/badge/Version-1.1.2-blue)
+![Latest Version](https://img.shields.io/badge/Version-1.1.3-blue)
 ![Foundry Version](https://img.shields.io/badge/Foundry_VTT-v13_%7C_v13-orange)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![System Agnostic](https://img.shields.io/badge/System-Agnostic-green)
@@ -11,7 +11,7 @@
 
 **Token Elevation Shadows** is a lightweight, system-agnostic module that automatically generates 2.5D drop shadows for tokens based on their elevation. There is an optional game setting to only apply elevation shadows if the token has a specific status/active effect, e.g. `fly` applied.
 
-It features a custom, high-performance PIXI shader that can strip away the baked-in drop shadows often found on standard digital assets. This ensures a clean, consistent silhouette whether a creature is walking on the ground or flying high above it, without requiring manual image editing.
+It has the ability to strip away the baked-in drop shadows often found on standard token art. This makes sure the token has a clean, consistent silhouette whether it is walking on the ground or flying above it, without requiring manual image editing.
 
 Please install the correct version of the module:
 
@@ -45,15 +45,15 @@ Go to the module settings and change **Time Integration** to **Core World Time**
 
 *(Note: For the automated day/night cycle to calculate correctly, ensure you have set a midday Altitude in your Solar Configuration settings).*
 
-## Design Philosophy: The Canvas Illusion
+## Design Philosophy: The Height Illusion
 
-Token Elevation Shadows is designed to create a 2.5D illusion of height without disrupting the strict 2D mechanical rules of Foundry VTT. To achieve this, the module deliberately separates the token's visual artwork from its logical footprint.
+Token Elevation Shadows is designed to create an illusion of height without disrupting the strict `2D + elevation` mechanical rules of Foundry VTT. To achieve this, the module deliberately separates the token's visual artwork from its logical footprint.
 
 When a token takes flight, you will notice the following intentional design choices:
 
-- **Tactical Clarity**: UI elements such as health bars, nameplates, status effect icons, and targeting reticles remain firmly planted on the ground. This provides a "tactical anchor," making sure players and GMs always know exactly which grid square a flying creature occupies for calculating ranges and placing area-of-effect templates.
+- **Tactical Clarity**: UI elements such as health bars, nameplates, status effect icons, and targeting reticles remain on the ground. This provides a "tactical anchor," making sure players and GMs always know exactly which grid square a flying creature occupies for calculating ranges and placing area-of-effect templates.
 - **Map Interaction**: The token's clickable hitbox stays on the ground. This prevents floating artwork from accidentally obstructing your ability to select other tokens standing behind the flying creature.
-- **Vision & Lighting**: Light sources and vision cones continue to emit from the token's true footprint on the map. This guarantees that Line of Sight calculations remain mathematically accurate and fully compatible with wall and vision modules.
+- **Vision & Lighting**: Light sources and vision cones continue to emit from the token's true elevation on the map. This guarantees that Line of Sight calculations remain mathematically accurate and fully compatible with wall and vision modules.
 - **Ecosystem Compatibility**: Because the module exclusively elevates the token's artwork (the PIXI mesh), ground-based spell effects, auras, and most Sequencer animations attached to the token's bounding box will remain on the floor where they were cast.
 
 ## API Reference
