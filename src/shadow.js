@@ -194,7 +194,11 @@ export class ShadowRenderer {
             token.mesh.filters.push(token._tokenAlphaFilter);
         }
 
-        token._tokenAlphaFilter.uniforms.threshold = config.alphaThreshold;
+        // Scale the clipping threshold by the token's actual opacity to prevent
+        // the shader from completely culling semi-transparent tokens.
+        const tokenAlpha = token.document.alpha ?? 1;
+
+        token._tokenAlphaFilter.uniforms.threshold = config.alphaThreshold * tokenAlpha;
         token._tokenAlphaFilter.uniforms.globalOpacity = 1;
     }
 
@@ -237,14 +241,20 @@ export class ShadowRenderer {
 
         const darknessLevel = canvas.scene?.environment?.darknessLevel ?? canvas.scene?.darkness ?? 0;
         const ambientLightFactor = 1 - darknessLevel;
-        const dynamicOpacity = (config.baseOpacity - heightRatio * config.baseOpacity) * ambientLightFactor;
+
+        // Fetch the token's current alpha state
+        const tokenAlpha = token.document.alpha ?? 1;
+
+        // Apply the token's alpha directly to the shadow's overall opacity
+        const dynamicOpacity = (config.baseOpacity - heightRatio * config.baseOpacity) * ambientLightFactor * tokenAlpha;
 
         const { shadowLength, blurAmount } = this._calculateShadowGeometry(token, elevation, elevationPixels, heightRatio, config);
 
         const currentOffsetX = -shadowLength * config.sinAzimuth;
         const currentOffsetY = shadowLength * config.cosAzimuth;
 
-        token._shadowAlphaFilter.uniforms.threshold = config.alphaThreshold;
+        // Scale the shadow's internal clipping threshold by the token's alpha
+        token._shadowAlphaFilter.uniforms.threshold = config.alphaThreshold * tokenAlpha;
         token._shadowAlphaFilter.uniforms.globalOpacity = dynamicOpacity;
 
         shadowSprite.texture = token.mesh.texture;
