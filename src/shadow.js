@@ -269,7 +269,7 @@ export class ShadowRenderer {
         if (blurFilter) blurFilter.blur = blurAmount;
 
         shadowSprite.position.set(centerX + currentOffsetX, centerY + currentOffsetY);
-        shadowSprite.visible = !token.document.hidden;
+        shadowSprite.visible = token.visible;
     }
 
     /**
