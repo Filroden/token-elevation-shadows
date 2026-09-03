@@ -221,18 +221,7 @@ export class ShadowRenderer {
 
         const shadowSprite = token._elevationShadow;
 
-        // Track previous sorting parameters to detect layer changes
-        const prevElevation = shadowSprite.elevation;
-        const prevSortLayer = shadowSprite.sortLayer;
-        const prevZIndex = shadowSprite.zIndex;
-
-        // Bind the shadow to the token's native elevation layer for proper sorting
-        shadowSprite.elevation = token.document.elevation;
-        shadowSprite.sortLayer = token.mesh.sortLayer ?? SHADOW_CONSTANTS.NATIVE_TOKEN_LAYER;
-        shadowSprite.zIndex = (token.mesh.zIndex ?? 0) - 1;
-
-        // Force the primary group to recalculate its buckets if shadow moved between elevation layers
-        if (prevElevation !== shadowSprite.elevation || prevSortLayer !== shadowSprite.sortLayer || prevZIndex !== shadowSprite.zIndex) {
+        if (canvas.primary) {
             canvas.primary.sortDirty = true;
         }
 
@@ -269,6 +258,8 @@ export class ShadowRenderer {
         if (blurFilter) blurFilter.blur = blurAmount;
 
         shadowSprite.position.set(centerX + currentOffsetX, centerY + currentOffsetY);
+
+        // Synchronise the shadow's visibility directly with the token's computed visibility state
         shadowSprite.visible = token.visible;
     }
 
@@ -360,16 +351,21 @@ export class ShadowRenderer {
         const blurFilter = new PIXI.BlurFilter();
         shadow.filters = [alphaFilter, blurFilter];
 
-        // Pre-assign the sorting pillars before adding to the group.
-        // This prevents the sprite from being permanently batched into the Background layer.
-        shadow.elevation = token.document.elevation;
-        shadow.sortLayer = token.mesh.sortLayer ?? 700; // 700 is the native Tokens layer
-        shadow.zIndex = (token.mesh.zIndex ?? 0) - 1;
+        // Dynamically bind all four pillars of V14 sorting.
+        // This guarantees the shadow perfectly matches the token's tier before applying the -1 zIndex micro-sort.
+        Object.defineProperty(shadow, "elevation", { get: () => token.document?.elevation ?? 0 });
+
+        // Drop the shadow into a micro-layer just beneath the tokens (e.g., 690)
+        // to ensure ground shadows never overlap peer tokens at the exact same elevation.
+        Object.defineProperty(shadow, "sortLayer", { get: () => (token.mesh?.sortLayer ?? SHADOW_CONSTANTS.NATIVE_TOKEN_LAYER) - 10 });
+
+        Object.defineProperty(shadow, "sort", { get: () => token.document?.sort ?? 0 });
+        Object.defineProperty(shadow, "zIndex", { get: () => (token.mesh?.zIndex ?? 0) - 1 });
 
         canvas.primary.addChild(shadow);
 
         // Explicitly flag the primary group to re-sort its elevation buckets.
-        canvas.primary.sortDirty = true;
+        if (canvas.primary) canvas.primary.sortDirty = true;
 
         token._elevationShadow = shadow;
         token._shadowAlphaFilter = alphaFilter;
